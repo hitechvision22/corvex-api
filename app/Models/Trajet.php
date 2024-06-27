@@ -21,7 +21,8 @@ class Trajet extends Model
         'Nombre_de_place',
         'nombre_de_place_disponible',
         'Mode_de_paiement',
-        'etat',
+        'etat', // actif/deactif
+        'status', // initie => en cours => termine / annuler
         'user_id',
     ];
 

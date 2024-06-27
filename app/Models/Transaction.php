@@ -12,6 +12,8 @@ class Transaction extends Model
     protected $fillable = [
         'libelle',
         'montant',
+        'wallet_id',
+        'methode',
         'trajet_id',
         'user_id',
     ];

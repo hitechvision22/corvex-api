@@ -64,15 +64,18 @@ Route::middleware('auth:api')->group(function () {
         Route::post('reservation', 'store');
     });
 
+    // piece
+
+    // tout les pieces
+    Route::get('Allpieces', [App\Http\Controllers\PieceController::class, 'index']);
+    // tout les pieces d'un utilisateur
+    Route::get('Mypiece/{id}', [App\Http\Controllers\PieceController::class, 'Mypiece']);
+
     // routes dashboard
     Route::get('StartDashboard', [App\Http\Controllers\Api\AuthController::class, 'StartDashboard']);
     Route::get('AllVehicules', [App\Http\Controllers\Api\AuthController::class, 'AllVehicules']);
     Route::get('AllUsers', [App\Http\Controllers\Api\AuthController::class, 'AllUsers']);
+    Route::post('CreateUser', [App\Http\Controllers\Api\AuthController::class, 'CreateUser']);
     Route::get('getFrais', [App\Http\Controllers\ReservationController::class, 'getFrais']);
     Route::put('updateFrais', [App\Http\Controllers\ReservationController::class, 'updateFrais']);
-
 });
-
-
-    
-    

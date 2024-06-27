@@ -18,12 +18,13 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
 
-        // User::create([
-        //     'name' => 'landry',
-        //     'email' => 'foguengcyrille@gmail.com',
-        //     'password' => Hash::make('Arthemix@1234'),
-        //     'type' => 3,
-        // ]);
+        User::create([
+            'name' => 'landry',
+            'email' => 'foguengcyrille@gmail.com',
+            'password' => Hash::make('Arthemix@1234'),
+            'type' => 3,
+            'verified' => true,
+        ]);
 
         Frais::create([
             'montant' => 250,

@@ -14,7 +14,8 @@ class Reservation extends Model
         'avis',
         'trajet_id',
         'user_id',
-        'nbr_place'
+        'nbr_place',
+        'status',
     ];
 
     public function trajet()

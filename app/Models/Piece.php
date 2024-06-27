@@ -9,13 +9,18 @@ class Piece extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'nom_piece',
+        'image',
+        'user_id',
         'id_vehicule',
-        'carte_grise',
-        'permis'
     ];
     public function vehicule()
     {
         return $this->belongsTo(Vehicule::class, 'id_vehicule');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
 

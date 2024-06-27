@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\users\SendInfoAccountLoginJob;
 use App\Jobs\users\WelcomeUserJob;
 use App\Mail\users\ResetPasswordMail;
 use App\Mail\users\WelcomeUserMail;
@@ -12,6 +13,7 @@ use App\Models\Reservation;
 use App\Models\Trajet;
 use App\Models\User;
 use App\Models\Vehicule;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -43,9 +45,13 @@ class AuthController extends Controller
             $image->move(public_path('avatars'), $newFileName);
             $request['avatar'] = $newFileName;
         }
-
+       
         $user = User::create($request->toArray());
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
+        if(request('type') == 1) Wallet::create([
+            'user_id' => $user->id,
+            'balance' => 0,
+        ]);
         $response = ['token' => $token];
 
         WelcomeUserJob::dispatch($user)->onQueue('UserEmail');
@@ -161,13 +167,13 @@ class AuthController extends Controller
         $user = User::whereEmail($request->email)->first();
         $code = rand(1542, 9999);
         if ($user) {
-            // try {
-            //     Mail::to($request->email)->send(new ResetPasswordMail($code));
-            // } catch (\Throwable $th) {
-            //     return response()->json([
-            //         'message' => "mauvaise connexion",
-            //     ]);
-            // }
+            try {
+                Mail::to($request->email)->send(new ResetPasswordMail($code));
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'message' => "mauvaise connexion",
+                ]);
+            }
             $codelink = Code::where('email', $request->email)->first();
             if ($codelink) {
                 Code::where('email', $request->email)->update(['code' => $code]);
@@ -189,7 +195,7 @@ class AuthController extends Controller
     public function send(Request $request)
     {
         $code = rand(2657, 9999);
-        // Mail::to($request->email)->send(new ResetPasswordMail($code));
+        Mail::to($request->email)->send(new ResetPasswordMail($code));
         $preuv = Code::where("email", $request->email)->first();
         if ($preuv) {
             Code::where("email", $request->email)->update(['code' => $code]);
@@ -230,6 +236,8 @@ class AuthController extends Controller
         $clients = User::where('type', 0)->get()->count();
         $covoits = Trajet::all()->count();
         $resers = Reservation::all()->count();
+        $users = User::all()->count();
+        $caissieres = User::all()->count();
 
         $reservations = Cache::rememberForever('reservation-' . request('page', 1), function () {
             return Reservation::with('trajet', 'user')->orderBy('created_at', 'DESC')->simplePaginate(30);
@@ -239,13 +247,15 @@ class AuthController extends Controller
             $clients,
             $covoits,
             $resers,
-            $reservations
+            $reservations,
+            $users,
+            $caissieres,
         ]);
     }
 
     public function AllUsers()
     {
-        $users = User::simplePaginate(30);
+        $users = User::orderBy('created_at', 'desc')->simplePaginate(30);
         return response()->json($users);
     }
 
@@ -259,5 +269,20 @@ class AuthController extends Controller
     {
         User::find($id)->update(['status' => $request->status]);
         return response()->json(['message' => 'status mis a jour']);
+    }
+
+    public function CreateUser(Request $request){
+
+        $user = new User();
+        $user->name = $request->name;
+        $user->email= $request->email;
+        $user->phone= $request->numero;
+        $user->type = $request->type;
+        $user->Viewpassword = trim($request->name.time());
+        $user->password = Hash::make($user->Viewpassword);
+        $user->save();
+
+        SendInfoAccountLoginJob::dispatch($user)->onQueue('userEmail');
+        return response()->json($user);
     }
 }

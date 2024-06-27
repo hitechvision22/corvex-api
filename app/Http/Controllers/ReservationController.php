@@ -6,7 +6,9 @@ use App\Jobs\reservations\SendConfirmReservationjob;
 use App\Models\Frais;
 use App\Models\Reservation;
 use App\Models\Trajet;
+use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,6 +43,15 @@ class ReservationController extends Controller
         $trajet = Trajet::find($request->trajet_id);
         $trajet->nombre_de_place_disponible -= $request->nbr_place;
         $trajet->update();
+
+        $wallet = Wallet::where('user_id',$trajet->user_id)->first();
+        Transaction::create([
+            'libelle' => 'reservation',
+            'methode' => $request->methode,
+            'user_id' => 'reservation',
+            'wallet_id' => $wallet->id,
+            'trajet_id' => 'reservation',
+        ]);
 
         SendConfirmReservationjob::dispatch(Auth::user(), $trajet, $reservation, User::find($trajet->user_id))->onQueue('ReservationEmail');
 

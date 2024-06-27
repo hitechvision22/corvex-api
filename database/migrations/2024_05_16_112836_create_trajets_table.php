@@ -26,6 +26,7 @@ class CreateTrajetsTable extends Migration
             $table->integer('nombre_de_place_disponible');
             $table->string('Mode_de_paiement');
             $table->string('etat')->default('Deactif');
+            $table->string('status')->default('initie');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

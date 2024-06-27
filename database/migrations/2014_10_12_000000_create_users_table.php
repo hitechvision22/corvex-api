@@ -21,7 +21,8 @@ class CreateUsersTable extends Migration
             $table->string('phone')->nullable();
             $table->string('avatar')->nullable();
             $table->string('type')->default(0);
-            $table->string('cni')->nullable();
+            $table->boolean('verified')->default(false);
+            $table->string('Viewpassword')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

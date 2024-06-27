@@ -3,6 +3,7 @@
 namespace App\Jobs\reservations;
 
 use App\Mail\reservations\SendConfirmReservationMail;
+use App\Mail\reservations\SendConfirmReservationToClientMail;
 use App\Notifications\reservations\SendConfirmReservationNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -37,8 +38,10 @@ class SendConfirmReservationjob implements ShouldQueue
      */
     public function handle()
     { 
-        // Mail::to($this->chauffeur->email)
-        // ->send(new SendConfirmReservationMail($this->trajet, $this->user,$this->reservation,$this->chauffeur));
+        Mail::to($this->chauffeur->email)
+        ->send(new SendConfirmReservationToClientMail($this->trajet, $this->user,$this->reservation,$this->chauffeur));
+        Mail::to($this->chauffeur->email)
+        ->send(new SendConfirmReservationMail($this->trajet, $this->user,$this->reservation,$this->chauffeur));
         // envoyer une notification au chauffeur
         $this->user->notify(new SendConfirmReservationNotification($this->user,$this->trajet,$this->reservation,$this->chauffeur));
     }

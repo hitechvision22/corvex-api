@@ -15,8 +15,9 @@ class CreateReservationsTable extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->string('note')->nullable();
-            $table->date('avis')->nullable();
+            $table->integer('note')->nullable();
+            $table->text('avis')->nullable();
+            $table->string('status')->default('accepté');
             $table->unsignedBigInteger('trajet_id');
             $table->unsignedBigInteger('user_id');
             $table->integer('nbr_place')->default(1);

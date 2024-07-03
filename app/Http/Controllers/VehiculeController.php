@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\vehicules\SaveVehiculeJob;
+use App\Mail\vehicules\SaveVehiculeMail;
 use App\Models\Piece;
+use App\Models\User;
 use App\Models\Vehicule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class VehiculeController extends Controller
 {
@@ -22,7 +25,8 @@ class VehiculeController extends Controller
         $vehicule->user_id = Auth::user()->id;
         $vehicule->save();
 
-        SaveVehiculeJob::dispatch(Auth::user(), $vehicule)->onQueue('VehiculeEmail');
+        Mail::to(User::find(Auth::user()->id)->email)
+        ->send(new SaveVehiculeMail(User::find(Auth::user()->id),$vehicule));
         return response()->json($vehicule);
     }
 

@@ -16,4 +16,22 @@ class TransactionController extends Controller
 
         return response()->json($MyTransactions);
     }
+
+    public function AllTransactions()
+    {
+        $AllTransactions = Transaction::with('reservation', 'wallet')->simplePaginate(30);
+
+        return response()->json($AllTransactions);
+    }
+
+    public function DetailTransaction($id){
+        $Transaction = Transaction::with('reservation', 'wallet')->find($id);
+        $Transaction->reservation->trajet;
+        return response()->json($Transaction);
+    }
+
+    public function DeleteTransaction($id){
+        Transaction::find($id)->delete();
+        return response()->json(['message' => 'Transaction supprimée']);
+    }
 }

@@ -17,9 +17,9 @@ class CreatePiecesTable extends Migration
             $table->id();
             $table->string('nom');
             $table->string('image')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->unsignedBigInteger('vehicule_id');
+            $table->unsignedBigInteger('vehicule_id')->nullable();
             $table->foreign('vehicule_id')->references('id')->on('vehicules')->onDelete('cascade');
             $table->timestamps();
             $table->engine = "InnoDB";

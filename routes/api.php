@@ -59,6 +59,7 @@ Route::middleware('auth:api')->group(function () {
     Route::controller(App\Http\Controllers\ReservationController::class)->group(function () {
         Route::get('reservation', 'index');
         Route::get('reservations', 'Reservations');
+        Route::get('reservations/{id}', 'FindReservation');
         Route::delete('reservation/{id}', 'deletedReservation');
         Route::put('reservation/{id}', 'updatedResev');
         Route::post('reservation', 'store');
@@ -78,4 +79,19 @@ Route::middleware('auth:api')->group(function () {
     Route::post('CreateUser', [App\Http\Controllers\Api\AuthController::class, 'CreateUser']);
     Route::get('getFrais', [App\Http\Controllers\ReservationController::class, 'getFrais']);
     Route::put('updateFrais', [App\Http\Controllers\ReservationController::class, 'updateFrais']);
+
+    // transactions
+    Route::get('AllTransactions', [App\Http\Controllers\TransactionController::class, 'AllTransactions']);
+    Route::get('DetailTransaction/{id}', [App\Http\Controllers\TransactionController::class, 'DetailTransaction']);
+    Route::delete('DeleteTransaction/{id}', [App\Http\Controllers\TransactionController::class, 'DeleteTransaction']);
+
+
+    // messagerie
+    Route::get('GetConversations', [App\Http\Controllers\ConversationController::class, 'getConversations']);
+    Route::get('GetConversationMessages', [App\Http\Controllers\ConversationController::class, 'getConversationMessages']);
+    Route::post('SendMessage', [App\Http\Controllers\ConversationController::class, 'sendMessage']);
+    Route::put('MarkMessageAsRead', [App\Http\Controllers\ConversationController::class, 'markMessageAsRead']);
+    Route::delete('DeleteMessage/{id}', [App\Http\Controllers\ConversationController::class, 'deleteMessage']);
+    Route::get('GetConversationAdmin/{reserId}', [App\Http\Controllers\ConversationController::class, 'GetConversationAdmin']);
 });
+

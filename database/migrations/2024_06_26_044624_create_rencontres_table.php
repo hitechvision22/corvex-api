@@ -18,6 +18,8 @@ class CreateRencontresTable extends Migration
             $table->unsignedBigInteger('id_client');
             $table->unsignedBigInteger('id_chauffeur');
             $table->string('status')->default('non-meet');
+            $table->boolean('checkChauffeur')->nullable();
+            $table->boolean('checkClient')->nullable();
             $table->foreign('id_client')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('id_chauffeur')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

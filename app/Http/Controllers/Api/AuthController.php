@@ -6,14 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Jobs\users\SendInfoAccountLoginJob;
 use App\Jobs\users\WelcomeUserJob;
 use App\Mail\users\ResetPasswordMail;
+use App\Mail\users\SendInfoAccountLoginMail;
 use App\Mail\users\WelcomeUserMail;
 use App\Models\Code;
 use App\Models\Piece;
 use App\Models\Reservation;
 use App\Models\Trajet;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vehicule;
 use App\Models\Wallet;
+use App\Notifications\users\WelcomeUserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -54,7 +57,11 @@ class AuthController extends Controller
         ]);
         $response = ['token' => $token];
 
-        WelcomeUserJob::dispatch($user)->onQueue('UserEmail');
+        Mail::to($user->email)
+        ->send(new WelcomeUserMail($user));
+        Wallet::create([ 'user_id'=>$user->id, 'balance'=>0]);
+        $user->notify(new WelcomeUserNotification($user));
+        
         return response()->json(['access_token' => $response, 'user' => $user], 200);
     }
 
@@ -149,6 +156,7 @@ class AuthController extends Controller
         if ($request->prenom) $user->prenom = $request->prenom;
         if ($request->phone) $user->phone = $request->phone;
         if ($request->ville) $user->ville = $request->ville;
+        if ($request->verified) $user->verified = $request->verified;
         if ($request->hasFile('avatar')) {
             File::delete(public_path() . '/images/' . $user->avatar);
             $file = $request->file('avatar');
@@ -227,6 +235,7 @@ class AuthController extends Controller
     public function Acceuil()
     {
         $Alltrajets = Trajet::where('etat', 'Actif')->orderBy('created_at', 'DESC')->simplePaginate(30);
+        
         return response()->json([$Alltrajets]);
     }
 
@@ -238,6 +247,7 @@ class AuthController extends Controller
         $resers = Reservation::all()->count();
         $users = User::all()->count();
         $caissieres = User::all()->count();
+        $transactions = Transaction::all()->count();
 
         $reservations = Cache::rememberForever('reservation-' . request('page', 1), function () {
             return Reservation::with('trajet', 'user')->orderBy('created_at', 'DESC')->simplePaginate(30);
@@ -250,6 +260,7 @@ class AuthController extends Controller
             $reservations,
             $users,
             $caissieres,
+            $transactions
         ]);
     }
 
@@ -277,12 +288,14 @@ class AuthController extends Controller
         $user->name = $request->name;
         $user->email= $request->email;
         $user->phone= $request->numero;
-        $user->type = $request->type;
+        $user->type = (int)$request->type;
+        if($request->type > 1) $user->verified = true;
         $user->Viewpassword = trim($request->name.time());
         $user->password = Hash::make($user->Viewpassword);
         $user->save();
 
-        SendInfoAccountLoginJob::dispatch($user)->onQueue('userEmail');
+        Mail::to($user->email)
+        ->send(new SendInfoAccountLoginMail($user));
         return response()->json($user);
     }
 }

@@ -11,18 +11,20 @@ class Transaction extends Model
 
     protected $fillable = [
         'libelle',
+        'date',
         'montant',
+        'balance',
         'wallet_id',
-        'methode',
-        'trajet_id',
-        'user_id',
+        'reservation_id',
+        'status',
     ];
 
-    public function user(){
-        return $this->belongsTo(User::class,'user_id');
+    public function reservation(){
+        return $this->belongsTo(Reservation::class,'reservation_id');
     }
 
-    public function trajet(){
-        return $this->belongsTo(Trajet::class,'trajet_id');
+    public function wallet(){
+        return $this->belongsTo(Wallet::class,'wallet_id');
     }
+
 }

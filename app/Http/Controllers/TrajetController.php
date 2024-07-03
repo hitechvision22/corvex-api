@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Trajet\SendInfoTrajetjob;
 use App\Jobs\Trajet\UpdateEtatTrajetjob;
+use App\Mail\Trajet\SendInfoTrajetMail;
+use App\Mail\Trajet\UpdateEtatTrajetmail;
 use App\Models\Piece;
 use App\Models\Trajet;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class TrajetController extends Controller
 {
@@ -39,15 +42,16 @@ class TrajetController extends Controller
         $trajet->date_depart = $request->date_depart;
         $trajet->heure_depart = $request->heure_depart;
         $trajet->prix = $request->prix;
-        $trajet->nombre_de_place = $request->nombre_place;
-        $trajet->nombre_de_place_disponible = $request->nombre_place;
+        $trajet->nombre_de_place = (int)$request->nombre_place;
+        $trajet->nombre_de_place_disponible = (int)$request->nombre_place;
         $trajet->user_id = Auth::user()->id;
-        $trajet->mode_de_paiement = 'OM/MOMO';
+        $trajet->Mode_de_paiement = 'OM/MOMO';
         // verifions s'il possede tout les pieces
-        if ($user->vehicule || $user->cni) $trajet->etat = 'Actif';
+        $trajet->etat = 'actif';
         $trajet->save();
 
-        SendInfoTrajetjob::dispatch($trajet, Auth::user())->onQueue('TrajetEmail');
+        Mail::to(Auth::user()->email)
+        ->send(new SendInfoTrajetMail($trajet, Auth::user()));
         return response()->json($trajet);
     }
 
@@ -64,9 +68,13 @@ class TrajetController extends Controller
     }
     public function UpdateEtatTrajet($id)
     {
+        
         Trajet::find($id)->update(['etat' => request('etat')]);
 
-        UpdateEtatTrajetjob::dispatch($id)->onQueue('TrajetEmail');
+    
+        $trajet = Trajet::with('user')->find($id);
+        Mail::to($trajet->user->email)
+        ->send(new UpdateEtatTrajetmail($trajet, $trajet->user->email));
         return response()->json(['message' => 'etat du trajet mis a jour']);
     }
 

@@ -15,12 +15,13 @@ class CreateTransactionsTable extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->string('libelle');
-            $table->string('methode');
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('trajet_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('trajet_id')->references('id')->on('trajets')->onDelete('cascade');
+            $table->string('libelle')->nullable();
+            $table->dateTime('date')->nullable();
+            $table->integer('montant')->default(0);
+            $table->integer('balance')->default(0);
+            $table->foreignId('wallet_id')->index()->constrained('wallets')->cascadeOnDelete();
+            $table->foreignId('reservation_id')->index()->constrained('reservations')->cascadeOnDelete();
+            $table->string('status')->nullable();
             $table->timestamps();
             $table->engine = "InnoDB";
         });

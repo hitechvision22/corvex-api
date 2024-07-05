@@ -25,6 +25,7 @@ class CreateTrajetsTable extends Migration
             $table->unsignedBigInteger('Nombre_de_place');
             $table->unsignedBigInteger('nombre_de_place_disponible');
             $table->string('Mode_de_paiement')->default('om/momo');
+            $table->boolean('bagage')->default(false);
             $table->string('etat')->default('Deactif');
             $table->string('status')->default('initie');
             $table->unsignedBigInteger('user_id');

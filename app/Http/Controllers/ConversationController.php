@@ -13,7 +13,7 @@ class ConversationController extends Controller
 {
     public function getConversations(Request $request)
     {
-        $conversations = Conversation::with('sender', 'reservation', 'user1', 'user2')->where('user1_id', Auth::user()->id)
+        $conversations = Conversation::with('sender', 'reservation', 'user1', 'user2','trajet')->where('user1_id', Auth::user()->id)
             ->orWhere('user2_id', Auth::user()->id)
             ->get();
 
@@ -22,9 +22,9 @@ class ConversationController extends Controller
 
 
 
-    public function getConversationMessages(Request $request, $conversationId)
+    public function getConversationMessages(Request $request, $reservationId)
     {
-        $conversation = Conversation::find($conversationId);
+        $conversation = Conversation::where("reservation_id",$reservationId)->first();
 
         if ($conversation && ($conversation->user1_id === Auth::user()->id || $conversation->user2_id === Auth::user()->id)) {
             $messages = $conversation->messages()->orderBy('created_at', 'asc')->get();
@@ -46,7 +46,13 @@ class ConversationController extends Controller
                 'message_text' => $request->message,
             ]);
 
-            return response()->json(['message' => $message]);
+            Conversation::find($conversationId)->update([
+                'last_message' => $request->message,
+                'sender_id'=>Auth::user()->id,
+                'created_at'=> Carbon::now(),
+            ]);
+
+            return response()->json([$message,$conversation]);
         }
 
         return response()->json(['error' => 'Conversation not found or not authorized to send messages'], 404);

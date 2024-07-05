@@ -42,6 +42,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::controller(App\Http\Controllers\TrajetController::class)->group(function () {
         Route::get('trajet/{id}', 'show');
+        Route::get('MyPosts', 'MyPosts');
         Route::post('trajet', 'store');
         Route::put('trajet/{id}', 'update');
         Route::put('UpdateEtatTrajet/{id}', 'UpdateEtatTrajet');
@@ -63,6 +64,8 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('reservation/{id}', 'deletedReservation');
         Route::put('reservation/{id}', 'updatedResev');
         Route::post('reservation', 'store');
+        Route::post('DeniedReservation', 'DeniedReservation');
+        
     });
 
     // piece
@@ -71,6 +74,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('Allpieces', [App\Http\Controllers\PieceController::class, 'index']);
     // tout les pieces d'un utilisateur
     Route::get('Mypiece/{id}', [App\Http\Controllers\PieceController::class, 'Mypiece']);
+    Route::post('StorePiece', [App\Http\Controllers\PieceController::class, 'StorePiece']);
+    Route::post('UpdatePiece', [App\Http\Controllers\PieceController::class, 'UpdatePiece']);
+    Route::get('GetPiece', [App\Http\Controllers\PieceController::class, 'GetPiece']);
 
     // routes dashboard
     Route::get('StartDashboard', [App\Http\Controllers\Api\AuthController::class, 'StartDashboard']);
@@ -88,10 +94,17 @@ Route::middleware('auth:api')->group(function () {
 
     // messagerie
     Route::get('GetConversations', [App\Http\Controllers\ConversationController::class, 'getConversations']);
-    Route::get('GetConversationMessages', [App\Http\Controllers\ConversationController::class, 'getConversationMessages']);
-    Route::post('SendMessage', [App\Http\Controllers\ConversationController::class, 'sendMessage']);
+    Route::get('GetConversationMessages/{reservationId}', [App\Http\Controllers\ConversationController::class, 'getConversationMessages']);
+    Route::post('sendMessage/{reservationId}', [App\Http\Controllers\ConversationController::class, 'sendMessage']);
     Route::put('MarkMessageAsRead', [App\Http\Controllers\ConversationController::class, 'markMessageAsRead']);
     Route::delete('DeleteMessage/{id}', [App\Http\Controllers\ConversationController::class, 'deleteMessage']);
     Route::get('GetConversationAdmin/{reserId}', [App\Http\Controllers\ConversationController::class, 'GetConversationAdmin']);
+    
+    
+    // wallet
+    Route::get('MyWallet', [App\Http\Controllers\WalletController::class, 'MyWallet']);
+    Route::get('Retrait', [App\Http\Controllers\WalletController::class, 'Retrait']);
+
+    
 });
 

@@ -41,6 +41,10 @@ class ReservationController extends Controller
 
     public function store(Request $request)
     {
+        $exist = Reservation::where("user_id", Auth::user()->id)->where('status', 'accepté')->first();
+        if ($exist) {
+            return response()->json(['message' => 'vous avez deja une reservation accepté']);
+        }
         $reservation = new Reservation();
         $reservation->trajet_id = $request->trajet_id;
         $reservation->user_id = Auth::user()->id; //client
@@ -76,26 +80,26 @@ class ReservationController extends Controller
         $wallet->update();
 
 
-       $conversation = Conversation::create([
+        $conversation = Conversation::create([
             'user1_id' => $trajet->user_id,
             'trajet_id' => $trajet->id,
             'user2_id' => Auth::user()->id,
             'sender_id' => Auth::user()->id,
-            'last_message' => " bonjour, j'ai pris une reservation ",
+            'last_message' => "bonjour, j'ai pris une reservation",
             'reservation_id' => $reservation->id,
         ]);
 
         Message::create([
-            'conversation_id'=> $conversation->id,
+            'conversation_id' => $conversation->id,
             'sender_id' => Auth::user()->id,
             'recipient_id' => $trajet->user_id,
-            'message_text' => " bonjour, j'ai pris une reservation ",
+            'message_text' => "bonjour, j'ai pris une reservation",
         ]);
 
-        Mail::to(User::find($trajet->user_id)->email)
-            ->send(new SendConfirmReservationToClientMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
-        Mail::to(User::find($trajet->user_id)->email)
-            ->send(new SendConfirmReservationMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
+        // Mail::to(User::find($trajet->user_id)->email)
+        //     ->send(new SendConfirmReservationToClientMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
+        // Mail::to(User::find($trajet->user_id)->email)
+        //     ->send(new SendConfirmReservationMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
         // envoyer une notification au chauffeur
         $user = User::find(Auth::user()->id);
         $user->notify(new SendConfirmReservationNotification(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
@@ -126,4 +130,81 @@ class ReservationController extends Controller
         Frais::where('raison', $request->raison)->update(['montant' => $request->montant]);
         return response()->json(['frais mis a jour']);
     }
+
+    // annuler une reservation
+    public function DeniedReservation(Request $request, $ReservationId)
+    {
+        $reservation = Reservation::find($ReservationId);
+        $reservation->status = 'annuler';
+        $reservation->update();
+
+        $trajet = Trajet::find($reservation->trajet_id);
+        $trajet->nombre_de_place_disponible += $reservation->nbr_place;
+        $trajet->update();
+
+        $user = User::find(Auth::user()->id);
+        if ($user->id == $reservation->user_id) {
+            // covex recupere ses frais et donne les 30% de la reservation et le reste est renvoye a l'utilisateur
+            $walletChauffeur = Wallet::where("user_id", $trajet->user_id)->first();
+            $walletChauffeur->montant += ($reservation->nbr_place * $trajet->prix) * 0.3;
+            $walletChauffeur->update();
+
+            $transaction = new Transaction();
+            $transaction->libelle = 'remboursement';
+            $transaction->date = Carbon::now();
+            $transaction->montant = ($reservation->nbr_place * $trajet->prix) * 0.3;
+            $transaction->balance = $walletChauffeur->montant + ($reservation->nbr_place * $trajet->prix) * 0.3;
+            $transaction->wallet_id = $walletChauffeur->id;
+            $transaction->reservation_id = $reservation->id;
+            $transaction->status = 'credit';
+            $transaction->save();
+
+
+            $walletUser = Wallet::where("user_id", $reservation->user_id)->first();
+            $walletUser->montant += ($reservation->nbr_place * $trajet->prix) * 0.7;
+            $walletUser->update();
+
+            $transaction = new Transaction();
+            $transaction->libelle = 'remboursement';
+            $transaction->date = Carbon::now();
+            $transaction->montant = ($reservation->nbr_place * $trajet->prix) * 0.7;
+            $transaction->balance = $walletUser->montant + ($reservation->nbr_place * $trajet->prix) * 0.7;
+            $transaction->wallet_id = $walletUser->id;
+            $transaction->reservation_id = $reservation->id;
+            $transaction->status = 'credit';
+            $transaction->save();
+
+            $admin = User::where("type", 4)->first();
+            $walletAdmin = Wallet::where("user_id", $admin->id)->first();
+            $walletAdmin->montant -= $reservation->nbr_place * $trajet->prix;
+            $walletAdmin->update();
+
+
+            $transaction = new Transaction();
+            $transaction->libelle = 'remboursement';
+            $transaction->date = Carbon::now();
+            $transaction->montant = ($reservation->nbr_place * $trajet->prix) * 0.3;
+            $transaction->balance = $walletAdmin->montant + $reservation->nbr_place * $trajet->prix;
+            $transaction->wallet_id = $walletAdmin->id;
+            $transaction->reservation_id = $reservation->id;
+            $transaction->status = 'debit';
+            $transaction->save();
+        } else {
+            $reservations = Reservation::where('trajet_id', $trajet->id)->get();
+
+            foreach ($reservations as $reservation) {
+                $walletUser = Wallet::where("user_id", $reservation->user_id)->first();
+                $walletUser->montant += $reservation->nbr_place * $trajet->prix;
+                $walletUser->update();
+            }
+
+            $walletUser = Wallet::where("user_id", $reservation->user_id)->first();
+            $walletUser->montant += $reservation->nbr_place * $trajet->prix;
+            $walletUser->update();
+        }
+
+        return response()->json(['message' => 'reservation annuler']);
+    }
+
+
 }

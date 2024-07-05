@@ -23,7 +23,7 @@ class ClientController extends Controller
         })->when($request->input('ville_destination'), function ($query, $villeDestination) {
             $query->where('ville_destination', 'like', "%{$villeDestination}%");
         })->when($request->input('date_depart'), function ($query, $dateDepart) {
-            $query->where('date_depart', 'like', "%{$dateDepart}%");
+            $query->where('date_depart', '>=', $dateDepart);
         })->where('etat', 'Actif')->SimplePaginate(30);
 
         return response()->json($trajets);

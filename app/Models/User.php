@@ -62,4 +62,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Reservation::class, 'user_id');
     }
+
+    public function wallet()
+    {
+        return $this->belongsTo(Wallet::class, 'user_id');
+    }
 }

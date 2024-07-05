@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -108,7 +109,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
         // MokoloMarket@12345789
         if ($user) {
-            if ($user->type == 3) {
+            if ($user->type >= 3) {
                 if (Hash::check($request->password, $user->password)) {
                     $token = $user->createToken('Laravel Password Grant Client')->accessToken;
                     $response = ['token' => $token];
@@ -138,7 +139,7 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = User::with('trajets', 'reservations', 'vehicule')->find(Auth::user()->id);
+        $user = User::with('trajets', 'reservations', 'vehicule','wallet')->find(Auth::user()->id);
 
         return response()->json($user);
     }
@@ -158,11 +159,11 @@ class AuthController extends Controller
         if ($request->ville) $user->ville = $request->ville;
         if ($request->verified) $user->verified = $request->verified;
         if ($request->hasFile('avatar')) {
-            File::delete(public_path() . '/images/' . $user->avatar);
+            File::delete('images' . $user->avatar);
             $file = $request->file('avatar');
             $extension = $file->getClientOriginalExtension();
             $imgAvatarname = time() . '.' . $extension;
-            $file->move(public_path('images'), $imgAvatarname);
+            $file->storeAs('images', $imgAvatarname);
             $user->avatar = $imgAvatarname;
         }
         $user->update();
@@ -246,7 +247,7 @@ class AuthController extends Controller
         $covoits = Trajet::all()->count();
         $resers = Reservation::all()->count();
         $users = User::all()->count();
-        $caissieres = User::all()->count();
+        $caissieres = User::where('type', 2)->count();
         $transactions = Transaction::all()->count();
 
         $reservations = Cache::rememberForever('reservation-' . request('page', 1), function () {

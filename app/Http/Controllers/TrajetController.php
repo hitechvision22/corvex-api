@@ -17,7 +17,13 @@ class TrajetController extends Controller
 {
     public function index()
     {
-        $trajet = Trajet::orderBy('created_at','DESC')->simplePaginate(30);
+        $trajet = Trajet::orderBy('created_at', 'DESC')->simplePaginate(30);
+        return response()->json($trajet);
+    }
+
+    public function MyPosts()
+    {
+        $trajet = Trajet::where('user_id',Auth::user()->id)->orderBy('created_at', 'DESC')->simplePaginate(30);
         return response()->json($trajet);
     }
 
@@ -45,13 +51,13 @@ class TrajetController extends Controller
         $trajet->nombre_de_place = (int)$request->nombre_place;
         $trajet->nombre_de_place_disponible = (int)$request->nombre_place;
         $trajet->user_id = Auth::user()->id;
-        $trajet->Mode_de_paiement = 'OM/MOMO';
-        // verifions s'il possede tout les pieces
-        $trajet->etat = 'actif';
+        $trajet->Mode_de_paiement = $request->Mode_de_paiement;
+        $trajet->bagage = $request->bagage;
+        $trajet->etat = 'non-actif';
         $trajet->save();
 
         Mail::to(Auth::user()->email)
-        ->send(new SendInfoTrajetMail($trajet, Auth::user()));
+            ->send(new SendInfoTrajetMail($trajet, Auth::user()));
         return response()->json($trajet);
     }
 
@@ -68,13 +74,13 @@ class TrajetController extends Controller
     }
     public function UpdateEtatTrajet($id)
     {
-        
+
         Trajet::find($id)->update(['etat' => request('etat')]);
 
-    
+
         $trajet = Trajet::with('user')->find($id);
         Mail::to($trajet->user->email)
-        ->send(new UpdateEtatTrajetmail($trajet, $trajet->user->email));
+            ->send(new UpdateEtatTrajetmail($trajet, $trajet->user->email));
         return response()->json(['message' => 'etat du trajet mis a jour']);
     }
 
@@ -84,18 +90,5 @@ class TrajetController extends Controller
         return response()->json(['message' => 'trajet supprime']);
     }
 
-
-    public function search(Request $request)
-    {
-        // foguengcyrille@gmail.com
-        /**
-         * request => ville_destination/ville_depart, heure de depart
-         * */
-
-        $trajets = Trajet::where('ville_destination', 'LIKE', '%' . $request->ville_destination . '%')
-            ->orWhere('ville_depart', 'LIKE', '%' . $request->ville_depart . '%')
-            ->simplePaginate(30);
-
-        return response()->json($trajets);
-    }
+    
 }

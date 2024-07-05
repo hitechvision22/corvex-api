@@ -10,9 +10,10 @@ class Piece extends Model
     use HasFactory;
     protected $fillable = [
         'nom_piece',
+        'date_expiration',
         'image',
         'user_id',
-        'id_vehicule',
+        'vehicule_id',
     ];
     public function vehicule()
     {

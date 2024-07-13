@@ -42,13 +42,12 @@ class PieceController extends Controller
 
                 $extension = $file1->getClientOriginalExtension();
                 $extension = $file2->getClientOriginalExtension();
-
-                $newfilename1 = 'image1' . "-" . $request->nom . "-" . $extension;
-                $newfilename2 = 'image2' . "-" . $request->nom . "-" . $extension;
-
-
-                $file1->storeAs('images', $newfilename1);
-                $file2->storeAs('images', $newfilename2);
+    
+                $newfilename1 = 'image1' . "-" . $request->nom ."-".Auth::user()->id. "." . $extension;
+                $newfilename2 = 'image2' . "-" . $request->nom ."-".Auth::user()->id. "." . $extension;
+    
+                $file1->move(public_path('images'), $newfilename1);
+                $file2->move(public_path('images'), $newfilename2);
 
                 $piece->image = json_encode([$newfilename1, $newfilename2]);
             }
@@ -85,8 +84,8 @@ class PieceController extends Controller
             $extension = $file1->getClientOriginalExtension();
             $extension = $file2->getClientOriginalExtension();
 
-            $newfilename1 = 'image1' . "-" . $request->nom . "-" . $extension;
-            $newfilename2 = 'image2' . "-" . $request->nom . "-" . $extension;
+            $newfilename1 = 'image1' . "-" . $request->nom ."-".Auth::user()->id. "." . $extension;
+            $newfilename2 = 'image2' . "-" . $request->nom ."-".Auth::user()->id. "." . $extension;
 
             $file1->move(public_path('images'), $newfilename1);
             $file2->move(public_path('images'), $newfilename2);

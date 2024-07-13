@@ -10,12 +10,10 @@ class Reservation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'note',
-        'avis',
         'trajet_id',
         'user_id',
         'nbr_place',
-        'status',
+        'status', // termine
     ];
 
     public function trajet()

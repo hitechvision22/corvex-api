@@ -8,6 +8,7 @@ use App\Jobs\users\WelcomeUserJob;
 use App\Mail\users\ResetPasswordMail;
 use App\Mail\users\SendInfoAccountLoginMail;
 use App\Mail\users\WelcomeUserMail;
+use App\Models\Avis;
 use App\Models\Code;
 use App\Models\Piece;
 use App\Models\Reservation;
@@ -49,20 +50,20 @@ class AuthController extends Controller
             $image->move(public_path('avatars'), $newFileName);
             $request['avatar'] = $newFileName;
         }
-       
+
         $user = User::create($request->toArray());
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-        if(request('type') == 1) Wallet::create([
+        Wallet::create([
             'user_id' => $user->id,
             'balance' => 0,
         ]);
         $response = ['token' => $token];
 
         Mail::to($user->email)
-        ->send(new WelcomeUserMail($user));
-        Wallet::create([ 'user_id'=>$user->id, 'balance'=>0]);
+            ->send(new WelcomeUserMail($user));
+        Wallet::create(['user_id' => $user->id, 'balance' => 0]);
         $user->notify(new WelcomeUserNotification($user));
-        
+
         return response()->json(['access_token' => $response, 'user' => $user], 200);
     }
 
@@ -139,14 +140,15 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = User::with('trajets', 'reservations', 'vehicule','wallet')->find(Auth::user()->id);
+        $user = User::with('trajets', 'reservations', 'vehicule', 'wallet')->find(Auth::user()->id);
 
         return response()->json($user);
     }
 
-    public function deletedUser($id){
+    public function deletedUser($id)
+    {
         User::find($id)->delete();
-        return response()->json(['message'=>'utilisateur supprimer']);
+        return response()->json(['message' => 'utilisateur supprimer']);
     }
 
 
@@ -163,11 +165,12 @@ class AuthController extends Controller
             $file = $request->file('avatar');
             $extension = $file->getClientOriginalExtension();
             $imgAvatarname = time() . '.' . $extension;
-            $file->storeAs('images', $imgAvatarname);
+            $path = $file->storeAs('images', $imgAvatarname);
             $user->avatar = $imgAvatarname;
         }
+
         $user->update();
-        return response()->json(['message' => 'user updated']);
+        return response()->json(['message' => asset(storage_path('app/public/' . $path))]);
     }
 
 
@@ -177,7 +180,7 @@ class AuthController extends Controller
         $code = rand(1542, 9999);
         if ($user) {
             try {
-                Mail::to($request->email)->send(new ResetPasswordMail($code));
+                // Mail::to($request->email)->send(new ResetPasswordMail($code));
             } catch (\Throwable $th) {
                 return response()->json([
                     'message' => "mauvaise connexion",
@@ -204,7 +207,7 @@ class AuthController extends Controller
     public function send(Request $request)
     {
         $code = rand(2657, 9999);
-        Mail::to($request->email)->send(new ResetPasswordMail($code));
+        // Mail::to($request->email)->send(new ResetPasswordMail($code));
         $preuv = Code::where("email", $request->email)->first();
         if ($preuv) {
             Code::where("email", $request->email)->update(['code' => $code]);
@@ -236,7 +239,7 @@ class AuthController extends Controller
     public function Acceuil()
     {
         $Alltrajets = Trajet::where('etat', 'Actif')->orderBy('created_at', 'DESC')->simplePaginate(30);
-        
+
         return response()->json([$Alltrajets]);
     }
 
@@ -250,9 +253,7 @@ class AuthController extends Controller
         $caissieres = User::where('type', 2)->count();
         $transactions = Transaction::all()->count();
 
-        $reservations = Cache::rememberForever('reservation-' . request('page', 1), function () {
-            return Reservation::with('trajet', 'user')->orderBy('created_at', 'DESC')->simplePaginate(30);
-        });
+        $reservations = Reservation::with('trajet', 'user')->orderBy('created_at', 'DESC')->simplePaginate(30);
         return response()->json([
             $chauffeurs,
             $clients,
@@ -283,20 +284,45 @@ class AuthController extends Controller
         return response()->json(['message' => 'status mis a jour']);
     }
 
-    public function CreateUser(Request $request){
+    public function CreateUser(Request $request)
+    {
 
         $user = new User();
         $user->name = $request->name;
-        $user->email= $request->email;
-        $user->phone= $request->numero;
+        $user->email = $request->email;
+        $user->phone = $request->numero;
         $user->type = (int)$request->type;
-        if($request->type > 1) $user->verified = true;
-        $user->Viewpassword = trim($request->name.time());
+        if ($request->type > 1) $user->verified = true;
+        $user->Viewpassword = trim($request->name . time());
         $user->password = Hash::make($user->Viewpassword);
         $user->save();
 
         Mail::to($user->email)
-        ->send(new SendInfoAccountLoginMail($user));
+            ->send(new SendInfoAccountLoginMail($user));
         return response()->json($user);
+    }
+
+    public function UserPiece($id)
+    {
+        $piece = Piece::where('nom', 'CNI')->where("user_id", $id)->first();
+        return response()->json($piece);
+    }
+
+    public function UserPosts($id)
+    {
+        $piece = Trajet::where("user_id", $id)->get();
+        return response()->json($piece);
+    }
+
+    public function UserVehicule($id)
+    {
+        $piece = Vehicule::where("user_id", $id)->first();
+        return response()->json($piece);
+    }
+
+    public function UserAvis($id)
+    {
+        $piece = Avis::where("user_id", $id)->get();
+        return response()->json($piece);
     }
 }

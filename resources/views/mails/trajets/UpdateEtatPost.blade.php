@@ -19,7 +19,7 @@
                 <strong>
                     {{ $trajet->ville_destination . ' (' . $trajet->point_destination . ') ' }}
                 </strong>
-                vient d'etre active
+                vient d'etre {{$trajet->etat}}
             </p>
         </div>
     </div>

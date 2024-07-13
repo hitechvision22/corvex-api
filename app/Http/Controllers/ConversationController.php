@@ -26,19 +26,19 @@ class ConversationController extends Controller
     {
         $conversation = Conversation::where("reservation_id",$reservationId)->first();
 
-        if ($conversation && ($conversation->user1_id === Auth::user()->id || $conversation->user2_id === Auth::user()->id)) {
+        if ($conversation && ($conversation->user1_id == Auth::user()->id || $conversation->user2_id == Auth::user()->id)) {
             $messages = $conversation->messages()->orderBy('created_at', 'asc')->get();
 
             return response()->json(['messages' => $messages]);
         }
 
-        return response()->json(['error' => 'Conversation not found or not authorized to access'], 404);
+        return response()->json(['error' => $reservationId], 404);
     }
 
     public function sendMessage(Request $request, $conversationId)
     {
         $conversation = Conversation::find($conversationId);
-        if ($conversation && ($conversation->user1_id === Auth::user()->id || $conversation->user2_id === Auth::user()->id)) {
+        if ($conversation && ($conversation->user1_id == Auth::user()->id || $conversation->user2_id == Auth::user()->id)) {
             $message = Message::create([
                 'conversation_id' => $conversationId,
                 'sender_id' => Auth::user()->id,
@@ -62,7 +62,7 @@ class ConversationController extends Controller
     public function markMessageAsRead(Request $request, $messageId)
     {
         $message = Message::find($messageId);
-        if ($message && $message->recipient_id === Auth::user()->id && !$message->read_at) {
+        if ($message && $message->recipient_id == Auth::user()->id && !$message->read_at) {
             $message->read_at = Carbon::now();
             $message->update();
             Conversation::find($message->conversation_id)->update(['read_at', Carbon::now()]);
@@ -76,13 +76,12 @@ class ConversationController extends Controller
     public function deleteMessage($messageId)
     {
         $message = Message::find($messageId);
-        if ($message && ($message->sender_id === Auth::user()->id || $message->recipient_id === Auth::user()->id)) {
-            $message->message_text = 'message supprime';
-            $message->update();
+        if ($message && ($message->sender_id == Auth::user()->id || $message->recipient_id == Auth::user()->id)) {
+            $message->delete();
 
             $conversation = Conversation::find($message->conversation_id);
-            $message = array_slice($conversation->messages()->orderBy('created_at', 'asc')->get(), -2, 1);
-            $conversation->last_message = $message->message_text;
+            $messages = $conversation->messages()->orderBy('created_at', 'asc')->get();
+            $conversation->last_message = $messages[count($messages)-1]->message_text;
             $conversation->update();
 
             return response()->json(['message' => 'Message deleted']);

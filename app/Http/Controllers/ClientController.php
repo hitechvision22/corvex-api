@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Trajet;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,7 +24,7 @@ class ClientController extends Controller
         })->when($request->input('ville_destination'), function ($query, $villeDestination) {
             $query->where('ville_destination', 'like', "%{$villeDestination}%");
         })->when($request->input('date_depart'), function ($query, $dateDepart) {
-            $query->where('date_depart', '>=', $dateDepart);
+            $query->where('date_depart', '>=', $dateDepart)->where('date_depart', '>=', Carbon::now());
         })->where('etat', 'Actif')->SimplePaginate(30);
 
         return response()->json($trajets);
@@ -34,7 +35,6 @@ class ClientController extends Controller
         $allNotifications = $user->notifications;
         $user->unreadNotifications->markAsRead();
     
-
         return response()->json([$allNotifications]);
     }
 }

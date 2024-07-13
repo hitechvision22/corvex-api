@@ -20,7 +20,7 @@ class CreateTransactionsTable extends Migration
             $table->integer('montant')->default(0);
             $table->integer('balance')->default(0);
             $table->foreignId('wallet_id')->index()->constrained('wallets')->cascadeOnDelete();
-            $table->foreignId('reservation_id')->index()->constrained('reservations')->cascadeOnDelete();
+            $table->foreignId('reservation_id')->nullable()->index()->constrained('reservations')->cascadeOnDelete();
             $table->string('status')->nullable();
             $table->timestamps();
             $table->engine = "InnoDB";

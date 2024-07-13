@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\reservations\SendConfirmReservationjob;
 use App\Mail\reservations\SendConfirmReservationMail;
 use App\Mail\reservations\SendConfirmReservationToClientMail;
+use App\Models\CodePromo;
 use App\Models\Conversation;
 use App\Models\Frais;
 use App\Models\Message;
@@ -18,6 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class ReservationController extends Controller
 {
@@ -96,10 +98,16 @@ class ReservationController extends Controller
             'message_text' => "bonjour, j'ai pris une reservation",
         ]);
 
-        // Mail::to(User::find($trajet->user_id)->email)
-        //     ->send(new SendConfirmReservationToClientMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
-        // Mail::to(User::find($trajet->user_id)->email)
-        //     ->send(new SendConfirmReservationMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
+        CodePromo::create([
+            'code_promo'=>Str::random(3),
+            'etat'=>'actif',
+            'reservation_id' => $reservation->id,
+        ]);
+
+        Mail::to(User::find($trajet->user_id)->email)
+            ->send(new SendConfirmReservationToClientMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
+        Mail::to(User::find($trajet->user_id)->email)
+            ->send(new SendConfirmReservationMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
         // envoyer une notification au chauffeur
         $user = User::find(Auth::user()->id);
         $user->notify(new SendConfirmReservationNotification(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
@@ -116,6 +124,8 @@ class ReservationController extends Controller
     public function FindReservation($id)
     {
         $reservation = Reservation::with('trajet', 'user')->find($id);
+        $trajet = $reservation->trajet;
+        $reservation['chauffeur'] = User::find($trajet->user_id);
         return response()->json($reservation);
     }
 
@@ -132,7 +142,7 @@ class ReservationController extends Controller
     }
 
     // annuler une reservation
-    public function DeniedReservation(Request $request, $ReservationId)
+    public function DeniedReservation($ReservationId)
     {
         $reservation = Reservation::find($ReservationId);
         $reservation->status = 'annuler';
@@ -206,5 +216,13 @@ class ReservationController extends Controller
         return response()->json(['message' => 'reservation annuler']);
     }
 
+    // afficher tout les clients d'un trajet
+    public function ClientTrajet($id)
+    {
+        $trajet = Trajet::find($id);
+        $reservations = Reservation::with('user')->where('trajet_id', $trajet->id)->get();
+        return response()->json($reservations);
+    }
 
+    
 }

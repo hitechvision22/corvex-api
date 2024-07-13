@@ -48,6 +48,7 @@ Route::middleware('auth:api')->group(function () {
         Route::put('UpdateEtatTrajet/{id}', 'UpdateEtatTrajet');
         Route::delete('trajet/{id}', 'destroy');
         Route::get('verifiedPiece', 'verifiedPiece');
+        Route::delete('DeletedLastPost', 'DeletedLastPost');
     });
 
     Route::controller(App\Http\Controllers\VehiculeController::class)->group(function () {
@@ -64,7 +65,9 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('reservation/{id}', 'deletedReservation');
         Route::put('reservation/{id}', 'updatedResev');
         Route::post('reservation', 'store');
-        Route::post('DeniedReservation', 'DeniedReservation');
+        Route::put('DeniedReservation', 'DeniedReservation');
+        Route::get('ClientTrajet/{trajetId}', 'ClientTrajet');
+        Route::put('DeletedLastPost', 'DeletedLastPost');
         
     });
 
@@ -90,6 +93,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('AllTransactions', [App\Http\Controllers\TransactionController::class, 'AllTransactions']);
     Route::get('DetailTransaction/{id}', [App\Http\Controllers\TransactionController::class, 'DetailTransaction']);
     Route::delete('DeleteTransaction/{id}', [App\Http\Controllers\TransactionController::class, 'DeleteTransaction']);
+    Route::get('AllTransactions', [App\Http\Controllers\TransactionController::class, 'AllTransactions']);
+    Route::get('CreditTransaction', [App\Http\Controllers\TransactionController::class, 'CreditTransaction']);
+    Route::get('DebitTransaction', [App\Http\Controllers\TransactionController::class, 'DebitTransaction']);
 
 
     // messagerie
@@ -103,8 +109,24 @@ Route::middleware('auth:api')->group(function () {
     
     // wallet
     Route::get('MyWallet', [App\Http\Controllers\WalletController::class, 'MyWallet']);
-    Route::get('Retrait', [App\Http\Controllers\WalletController::class, 'Retrait']);
-
+    Route::put('Retrait', [App\Http\Controllers\WalletController::class, 'Retrait']);
     
+    // profil
+    Route::get('UserPiece/{id}', [App\Http\Controllers\Api\AuthController::class, 'UserPiece']);
+    Route::get('UserPosts/{id}', [App\Http\Controllers\Api\AuthController::class, 'UserPosts']);
+    Route::get('UserVehicule/{id}', [App\Http\Controllers\Api\AuthController::class, 'UserVehicule']);
+    Route::get('UserAvis/{id}', [App\Http\Controllers\Api\AuthController::class, 'UserAvis']);
+    
+    
+    // avis
+    Route::post('StoreAvis', [App\Http\Controllers\AvisController::class, 'StoreAvis']);
+    Route::post('DeletedAvis/{id}', [App\Http\Controllers\AvisController::class, 'DeletedAvis']);
+
+    // code promo
+    Route::get('CodePromo/{id}', [App\Http\Controllers\CodePromoController::class, 'index']);
+    Route::get('ValidedCodePromo/{id}', [App\Http\Controllers\CodePromoController::class, 'validated']);
+    Route::get('UpdatedEtat/{id}', [App\Http\Controllers\CodePromoController::class, 'UpdatedEtat']);
+    Route::get('DeletedCodePromo/{id}', [App\Http\Controllers\CodePromoController::class, 'DeletedCodePromo']);
+
 });
 

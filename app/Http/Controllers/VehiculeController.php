@@ -73,8 +73,8 @@ class VehiculeController extends Controller
 
     public function VehiculePiece($id)
     {
-        $piece = Piece::where('vehicule_id', $id)->first();
-        return response()->json($piece);
+        $pieces = Piece::where('vehicule_id', $id)->get();
+        return response()->json($pieces);
     }
 
     public function DeleteVehicule($id)

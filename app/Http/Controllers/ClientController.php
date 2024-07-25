@@ -19,13 +19,14 @@ class ClientController extends Controller
      * */
     public function search(Request $request)
     {
+        $currentDate = Carbon::now()->format('Y-m-d');
         $trajets = Trajet::when($request->input('ville_depart'), function ($query, $villeDepart) {
             $query->where('ville_depart', 'like', "%{$villeDepart}%");
         })->when($request->input('ville_destination'), function ($query, $villeDestination) {
             $query->where('ville_destination', 'like', "%{$villeDestination}%");
         })->when($request->input('date_depart'), function ($query, $dateDepart) {
-            $query->where('date_depart', '>=', $dateDepart)->where('date_depart', '>=', Carbon::now());
-        })->where('etat', 'Actif')->SimplePaginate(30);
+            $query->where('date_depart', '>=', $dateDepart);
+        })->where('etat', 'Actif')->where('date_depart', '>', $currentDate)->SimplePaginate(30);
 
         return response()->json($trajets);
     }

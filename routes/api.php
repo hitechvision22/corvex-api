@@ -65,7 +65,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('reservation/{id}', 'deletedReservation');
         Route::put('reservation/{id}', 'updatedResev');
         Route::post('reservation', 'store');
-        Route::put('DeniedReservation', 'DeniedReservation');
+        Route::put('DeniedReservation/{ReservationId}', 'DeniedReservation');
         Route::get('ClientTrajet/{trajetId}', 'ClientTrajet');
         Route::put('DeletedLastPost', 'DeletedLastPost');
         

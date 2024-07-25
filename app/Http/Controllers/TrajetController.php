@@ -51,7 +51,7 @@ class TrajetController extends Controller
         $trajet->point_destination = $request->point_destination;
         $trajet->date_depart = $request->date_depart;
         $trajet->heure_depart = $request->heure_depart;
-        $trajet->prix = $request->prix;
+        $trajet->prix = $request->prix ? $request->prix : 0;
         $trajet->nombre_de_place = (int)$request->nombre_place;
         $trajet->nombre_de_place_disponible = (int)$request->nombre_place;
         $trajet->user_id = Auth::user()->id;

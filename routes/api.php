@@ -121,6 +121,7 @@ Route::middleware('auth:api')->group(function () {
     // avis
     Route::post('StoreAvis', [App\Http\Controllers\AvisController::class, 'StoreAvis']);
     Route::post('DeletedAvis/{id}', [App\Http\Controllers\AvisController::class, 'DeletedAvis']);
+    Route::get('CleanData', [App\Http\Controllers\ClientController::class, 'CleanData']);
 
     // code promo
     Route::get('CodePromo/{id}', [App\Http\Controllers\CodePromoController::class, 'index']);

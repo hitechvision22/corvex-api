@@ -98,11 +98,6 @@ class ReservationController extends Controller
             'message_text' => "bonjour, j'ai pris une reservation",
         ]);
 
-        CodePromo::create([
-            'code_promo'=>Str::random(3),
-            'etat'=>'actif',
-            'reservation_id' => $reservation->id,
-        ]);
 
         Mail::to(User::find($trajet->user_id)->email)
             ->send(new SendConfirmReservationToClientMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));

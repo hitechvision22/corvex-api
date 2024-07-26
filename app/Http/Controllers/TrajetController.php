@@ -52,12 +52,12 @@ class TrajetController extends Controller
         $trajet->date_depart = $request->date_depart;
         $trajet->heure_depart = $request->heure_depart;
         $trajet->prix = $request->prix ? $request->prix : 0;
-        $trajet->nombre_de_place = (int)$request->nombre_place;
-        $trajet->nombre_de_place_disponible = (int)$request->nombre_place;
+        $trajet->nombre_de_place = $request->nombre_place;
+        $trajet->nombre_de_place_disponible = $request->nombre_place;
         $trajet->user_id = Auth::user()->id;
         $trajet->Mode_de_paiement = $request->Mode_de_paiement;
         $trajet->bagage = $request->bagage;
-        $trajet->etat = 'non-actif';
+        $trajet->etat = 'actif';
         $trajet->save();
 
         Mail::to(Auth::user()->email)

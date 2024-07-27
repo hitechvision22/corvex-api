@@ -56,6 +56,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('SaveVehiculePiece/{id}', 'SaveVehiculePiece');
         Route::get('VehiculePiece/{id}', 'VehiculePiece');
         Route::delete('Vehicule/{id}', 'DeleteVehicule');
+        Route::delete('Vehicule', 'vehicule');
     });
 
     Route::controller(App\Http\Controllers\ReservationController::class)->group(function () {

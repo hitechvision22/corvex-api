@@ -82,4 +82,10 @@ class VehiculeController extends Controller
         Vehicule::find($id)->delete();
         return response()->json(['message' => 'vehicule supprime']);
     }
+
+    public function vehicule(){
+        $user = User::find(Auth::user()->id);
+        $vehicule = $user->vehicule;
+        return response()->json($vehicule? true : false);
+    }
 }

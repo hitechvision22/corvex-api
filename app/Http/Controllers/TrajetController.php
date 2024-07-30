@@ -10,6 +10,7 @@ use App\Models\Frais;
 use App\Models\Piece;
 use App\Models\Reservation;
 use App\Models\Trajet;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use Carbon\Carbon;
@@ -83,26 +84,48 @@ class TrajetController extends Controller
 
         Trajet::find($id)->update([
             'etat' => request('etat'),
-            'nombre_de_place_disponible' => $trajet->nombre_de_place,
+            'nombre_de_place_disponible' => $trajet->Nombre_de_place,
         ]);
 
         $frais = Frais::where('raison','revenus')->first();
         $reservations = Reservation::with('trajet','user')->where('trajet_id',$trajet->id)->get();
 
+       if($trajet->etat == 'annuler'){
         foreach ($reservations as $reservation) {
-           $client = $reservation->user;
-           $trajet = $reservation->trajet;
-
-           $MontantRetour = ($trajet * $reservation->nbr_place) + $frais->montant;
-
-           $clientWallet = Wallet::where("user_id",$client->id)->first();
-           $clientWallet->montant += $MontantRetour;
-           $clientWallet->update();
-
-           $adminWallet = Wallet::where("user_id",1)->first();
-           $adminWallet->montant -= $MontantRetour;
-           $adminWallet->update();
-        }
+            $client = $reservation->user;
+            $trajet = $reservation->trajet;
+ 
+            $MontantRetour = ($trajet * $reservation->nbr_place) + $frais->montant;
+ 
+            $clientWallet = Wallet::where("user_id",$client->id)->first();
+            $clientWallet->montant += $MontantRetour;
+            $clientWallet->update();
+ 
+            $transaction = new Transaction();
+            $transaction->libelle = 'remboursement';
+            $transaction->date = Carbon::now();
+            $transaction->montant = ($reservation->nbr_place * $trajet->prix) * 0.3;
+            $transaction->balance = $clientWallet->montant + ($reservation->nbr_place * $trajet->prix) * 0.3;
+            $transaction->wallet_id = $clientWallet->id;
+            $transaction->reservation_id = $reservation->id;
+            $transaction->status = 'credit';
+            $transaction->save();
+ 
+            $adminWallet = Wallet::where("user_id",1)->first();
+            $adminWallet->montant -= $MontantRetour;
+            $adminWallet->update();
+ 
+            $transaction = new Transaction();
+            $transaction->libelle = 'remise de fonds pour reservation';
+            $transaction->date = Carbon::now();
+            $transaction->montant = ($reservation->nbr_place * $trajet->prix) * 0.3;
+            $transaction->balance = $adminWallet->montant + $reservation->nbr_place * $trajet->prix;
+            $transaction->wallet_id = $adminWallet->id;
+            $transaction->reservation_id = $reservation->id;
+            $transaction->status = 'debit';
+            $transaction->save();
+         }
+       }
 
         Mail::to($trajet->user->email)
             ->send(new UpdateEtatTrajetmail(User::find($trajet->user_id),$trajet));

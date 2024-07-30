@@ -180,7 +180,7 @@ class AuthController extends Controller
         $code = rand(1542, 9999);
         if ($user) {
             try {
-                // Mail::to($request->email)->send(new ResetPasswordMail($code));
+                 Mail::to($request->email)->send(new ResetPasswordMail($code));
             } catch (\Throwable $th) {
                 return response()->json([
                     'message' => "mauvaise connexion",
@@ -207,7 +207,7 @@ class AuthController extends Controller
     public function send(Request $request)
     {
         $code = rand(2657, 9999);
-        // Mail::to($request->email)->send(new ResetPasswordMail($code));
+         Mail::to($request->email)->send(new ResetPasswordMail($code));
         $preuv = Code::where("email", $request->email)->first();
         if ($preuv) {
             Code::where("email", $request->email)->update(['code' => $code]);

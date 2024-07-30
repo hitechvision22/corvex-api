@@ -98,9 +98,6 @@ class ReservationController extends Controller
             'message_text' => "bonjour, j'ai pris une reservation",
         ]);
 
-
-        Mail::to(User::find($trajet->user_id)->email)
-            ->send(new SendConfirmReservationToClientMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
         Mail::to(User::find($trajet->user_id)->email)
             ->send(new SendConfirmReservationMail(Auth::user(), $trajet, $reservation, User::find($trajet->user_id)));
         // envoyer une notification au chauffeur

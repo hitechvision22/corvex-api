@@ -56,7 +56,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('SaveVehiculePiece/{id}', 'SaveVehiculePiece');
         Route::get('VehiculePiece/{id}', 'VehiculePiece');
         Route::delete('Vehicule/{id}', 'DeleteVehicule');
-        Route::delete('Vehicule', 'vehicule');
+        Route::get('Vehicule', 'vehicule');
     });
 
     Route::controller(App\Http\Controllers\ReservationController::class)->group(function () {
@@ -124,11 +124,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('DeletedAvis/{id}', [App\Http\Controllers\AvisController::class, 'DeletedAvis']);
     Route::get('CleanData', [App\Http\Controllers\ClientController::class, 'CleanData']);
 
-    // code promo
-    Route::get('CodePromo/{id}', [App\Http\Controllers\CodePromoController::class, 'index']);
-    Route::get('ValidedCodePromo/{id}', [App\Http\Controllers\CodePromoController::class, 'validated']);
-    Route::get('UpdatedEtat/{id}', [App\Http\Controllers\CodePromoController::class, 'UpdatedEtat']);
-    Route::get('DeletedCodePromo/{id}', [App\Http\Controllers\CodePromoController::class, 'DeletedCodePromo']);
+ 
 
 });
 

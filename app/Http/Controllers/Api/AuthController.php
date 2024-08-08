@@ -170,7 +170,7 @@ class AuthController extends Controller
         }
 
         $user->update();
-        return response()->json(['message' => asset(storage_path('app/public/' . $path))]);
+        return response()->json(['message' => "user mis a jour"]);
     }
 
 

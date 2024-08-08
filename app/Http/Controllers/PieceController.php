@@ -26,10 +26,6 @@ class PieceController extends Controller
     // enregistrer une piece
     public function StorePiece(Request $request)
     {
-        $inter = Piece::where("nom", $request->nom)->where('user_id', Auth::user()->id)->first();
-        if ($inter) {
-            return response()->json(['message' => 'Piece existe deja']);
-        } else {
             $piece = new Piece();
             $piece->nom = $request->nom;
             $piece->date_expiration = $request->date_expiration;
@@ -54,7 +50,7 @@ class PieceController extends Controller
 
             $piece->save();
             return response()->json($piece);
-        }
+        
     }
 
     // supprimer une piece
@@ -73,6 +69,8 @@ class PieceController extends Controller
         if ($request->id_vehicule) $piece->id_vehicule = $request->id_vehicule;
         $piece->user_id = Auth::user()->id;
 
+
+        return response()->json(['message'=>$request->hasFile('image')]);
         if ($request->hasFile('image1') && $request->hasFile('image2')) {
 
             File::delete(public_path() . "images/" . json_decode($piece->image)[0]);

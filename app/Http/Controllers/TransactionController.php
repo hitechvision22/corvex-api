@@ -51,8 +51,7 @@ class TransactionController extends Controller
     }
 
     public function DetailTransaction($id){
-        $Transaction = Transaction::with('reservation', 'wallet')->find($id);
-        $Transaction->reservation->trajet;
+        $Transaction = Transaction::with('reservation', 'wallet','traje')->find($id);
         return response()->json($Transaction);
     }
 
